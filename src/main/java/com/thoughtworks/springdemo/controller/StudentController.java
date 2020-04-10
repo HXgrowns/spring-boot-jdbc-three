@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.thoughtworks.springdemo.repository.StudentRepository;
 
-import java.util.Collection;
+import java.util.*;
 
 @RestController
 @RequestMapping("/student")
@@ -13,24 +13,36 @@ public class StudentController {
     @Autowired
     private StudentRepository studentRepository;
 
-    @PostMapping(value = "/add")
+    @PostMapping(value = "/save")
     public String addStudent(Student student) {
-        return studentRepository.addStudent(student);
+        Student byName = studentRepository.findByName(student.getName());
+        if (byName == null) {
+            studentRepository.save(student);
+            return "保存成功";
+        }
+        return "姓名重复";
     }
 
-    @GetMapping(value = "/queryByName")
+    @GetMapping(value = "/findByName")
     public Student queryByName(@RequestParam String name) {
-        return studentRepository.queryByName(name);
+        return studentRepository.findByName(name);
     }
 
-    @GetMapping(value = "/list")
-    public Collection<Student> queryAll() {
-        return studentRepository.queryAllStudent();
+    @GetMapping(value = "/findAll")
+    public List<Student> getStudent() {
+        List<Student> students = new ArrayList<>();
+        Iterable<Student> all = studentRepository.findAll();
+        for (Student student : all) {
+            students.add(student);
+        }
+        return students;
     }
 
-    @DeleteMapping(value = "/delete")
+    @DeleteMapping(value = "/deleteByName")
     public String delete(String name) {
-        return studentRepository.deleteByName(name);
+        if (studentRepository.deleteByName(name)) {
+            return "删除成功";
+        }
+        return "删除失败";
     }
-
 }
